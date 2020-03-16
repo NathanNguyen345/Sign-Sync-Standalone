@@ -1,0 +1,11 @@
+.DS_Store
+.idea
+__pycache__
+ss_standalone/build/
+ss_standalone/dist/
+ss_standalone/sign_sync_standalone.egg-info/
+ss_standalone/sign_sync/config/connector-azure.yml
+ss_standalone/sign_sync/config/connector-ldap.yml
+ss_standalone/sign_sync/config/connector-sign-sync.yml
+ss_standalone/sign_sync/config/connector-umapi.yml
+ss_standalone/sign_sync/config/private.key

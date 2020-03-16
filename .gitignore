@@ -1,6 +1,7 @@
 .DS_Store
-.idea
+.idea/
 __pycache__
+venv
 ss_standalone/build/
 ss_standalone/dist/
 ss_standalone/sign_sync_standalone.egg-info/

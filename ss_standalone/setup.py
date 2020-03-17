@@ -22,6 +22,7 @@ setup(name='sign_sync_standalone',
       license='MIT',
       packages=['sign_sync', 'sign_sync.connections'],
       install_requires=[
+          'adal',
           'apscheduler',
           'cryptography',
           'PyJWT',

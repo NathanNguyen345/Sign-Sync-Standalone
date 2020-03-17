@@ -10,6 +10,7 @@ import sign_sync.connections.ldap_connection
 import sign_sync.thread_functions
 from queue import Queue
 
+import sign_sync.connections.azure_connection
 
 LOGGER = sign_sync.logger.Log()
 
@@ -18,18 +19,20 @@ def main():
 
     data_connector = None
     log_file = LOGGER.get_log()
-    
+
     # Instantiate Sign object & validate
     sign_obj = sign_sync.connections.sign_connection.Sign(log_file)
     sign_obj.validate_integration_key(sign_obj.header, sign_obj.url)
     sign_groups = sign_obj.get_sign_group()
-    
+
     # Get all of the configuration and connector needed to run the application
     if sign_obj.connector == 'ldap':
         data_connector = sign_sync.connections.ldap_connection.LdapConfig()
     elif sign_obj.connector == 'umapi':
         data_connector = sign_sync.connections.umapi_connection.Umapi(log_file)
-    
+    elif sign_obj.connector == 'azure':
+        data_connector = sign_sync.connections.azure_connection.Azure()
+
     run(log_file, sign_obj, sign_groups, data_connector)
 
 
@@ -39,7 +42,7 @@ def run(logs, sign_obj, sign_groups, connector):
     :param logs: dict()
     :param sign_obj: dict()
     :param sign_groups: list[]
-    :param data_connectors: dict()
+    :param connector: dict()
     """
 
     print('-- Time of Sync {} --'.format(datetime.datetime.now().strftime('%m-%d-%Y %H:%M:%S')))
@@ -82,6 +85,7 @@ def run(logs, sign_obj, sign_groups, connector):
     print('-- Execution Time: {} --'.format(time.time() - start_time))
     logs['process'].info('------------------------------- Ending Sign Sync ---------------------------------')
 
+
 def get_data_from_connector(sign_obj, data_connector):
     """
     This function gets user data the main connector
@@ -90,16 +94,23 @@ def get_data_from_connector(sign_obj, data_connector):
     :return: dict(), dict()
     """
 
+    group_list = []
+    user_list = []
+
     # Get Users and Groups information from our connector
     if sign_obj.connector == 'umapi':
         group_list = data_connector.query_user_groups()
         user_list = data_connector.query_users_in_groups(sign_obj.get_product_profile(), sign_obj.account_type)
-    else:
+    elif sign_obj.connector == 'ldap':
         group_list = data_connector.get_ldap_groups_query(sign_obj, LOGGER)
         temp_list = data_connector.get_ldap_users_in_groups(group_list, sign_obj, LOGGER)
-        user_list = data_connector.ldap_user_mp(temp_list, LOGGER)
+        group_list = data_connector.check_group_mapping(group_list, sign_obj.groups)
+        user_list = data_connector.ldap_user_mp(temp_list, sign_obj.groups, LOGGER)
+    elif sign_obj.connector == 'azure':
+        group_list = data_connector.get_azure_groups_formatted(sign_obj.groups, LOGGER)
+        user_list = data_connector.create_user_json(sign_obj.email, sign_obj.groups, LOGGER)
 
-    return (group_list, user_list)
+    return group_list, user_list
 
 
 def do_threading(user_list, func):

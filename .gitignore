@@ -10,3 +10,7 @@ ss_standalone/sign_sync/config/connector-ldap.yml
 ss_standalone/sign_sync/config/connector-sign-sync.yml
 ss_standalone/sign_sync/config/connector-umapi.yml
 ss_standalone/sign_sync/config/private.key
+ss_standalone/sign_sync/logs/error/*
+!ss_standalone/sign_sync/logs/error/.gitkeep
+ss_standalone/sign_sync/logs/process/*
+!ss_standalone/sign_sync/logs/process/.gitkeep

@@ -48,6 +48,10 @@ provisioning:
   email_suppression:
     password:
 
+  group_mapping:
+    # If no custom mapping leave blank. Else follow key-value format below:
+    #Directory_Group_Name: Sign_Group_Name
+
 # This is the settings you want to set for umapi sync.
 umapi_conditions:
   # The product profile you're trying to target. If you're targeting

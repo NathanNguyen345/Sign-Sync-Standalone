@@ -54,6 +54,9 @@ class Sign:
         self.sign_users = self.get_sign_users()
         self.default_group = self.get_sign_group()['Default Group']
 
+        # Group Mapping
+        self.groups = self.sign_config_yml['sign_sync']['group_mapping']
+
 
     class SignDecorators:
         @classmethod

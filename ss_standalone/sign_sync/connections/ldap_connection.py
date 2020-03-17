@@ -203,11 +203,12 @@ class LdapConfig:
                 connection.abandon(msgid)
             raise
 
-    def ldap_user_mp(self, user_list, sys_log=None):
+    def ldap_user_mp(self, user_list, group_map, sys_log=None):
         """
         This function is the multiprocessor for getting batch users from LDAP. This is performed if you're trying to
         query more than 1500+ users. LDAP has user query limitation.
         :param user_list: list[dict()]
+        :param group_map: list()
         :param sys_log: LOGGER
         :return: list[dict()]
         """
@@ -230,7 +231,7 @@ class LdapConfig:
                 user_info_decoded = user.decode('utf-8')
                 user_info = self.conn.search_s(user_info_decoded, ldap.SCOPE_SUBTREE, attrlist=filters)[0][1]
 
-                self.create_user_json(user_info, process_number, return_dict)
+                self.create_user_json(user_info, group_map, process_number, return_dict)
 
             temp_user_list.append(return_dict.values())
         temp_user_list = self.flatten_list(temp_user_list)
@@ -250,13 +251,13 @@ class LdapConfig:
         for i in range(0, len(user_list), batch):
             yield user_list[i:i + batch]
 
-
     @staticmethod
-    def create_user_json(user_info, process_number, return_dict):
+    def create_user_json(user_info, group_map, process_number, return_dict):
         """
         This function will format the ldap information into a json format similar to the one we get
         from UMAPI.
         :param user_info: dict()
+        :param group_map: list()
         :param process_number: int
         :param return_dict: dict()
         :return: dict()
@@ -267,6 +268,16 @@ class LdapConfig:
         # Split the user's group into a list and decode it
         for group in user_info['memberOf']:
             group_list.append(group.decode('utf-8').split(',')[0][3:])
+
+        # Group mapping
+        if group_map:
+            temp_group_list = list()
+            for group in group_list:
+                if group == "SIGN_ACCOUNT_ADMIN" or group == "SIGN_GROUP_ADMIN":
+                    temp_group_list.append(group)
+                elif group in group_map:
+                    temp_group_list.append(group_map[group])
+            group_list = temp_group_list
 
         # Format it to an a standardize json format
         data = {
@@ -308,3 +319,25 @@ class LdapConfig:
         flatten_list = [item for sublist in target_list for item in sublist]
 
         return flatten_list
+
+    @staticmethod
+    def check_group_mapping(group_list, group_map):
+        """
+        This function checks to see if group mapping is enabled. If so, it will replace all the mappings prior to group
+        creation.
+        :param group_list: list()
+        :param group_map: dict()
+        :return: list()
+        """
+
+        if group_map:
+
+            temp_list = list()
+
+            for group_name in group_list:
+                if group_name in group_map:
+                    temp_list.append(group_map[group_name])
+
+            return temp_list
+        else:
+            return group_list

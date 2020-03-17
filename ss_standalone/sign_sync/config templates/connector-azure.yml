@@ -1,5 +1,13 @@
+# This is the Azure configuration file.
+#
+# This file contains all the import information needed to sync users into the Sign Console
+# Please make sure that all your information is correct.
+
+# Tenant ID for your Azure Active Directory
 tenant: ""
 
+# Client ID for your Azure Directory
 client_id: ""
 
+# Client Secret for your Azure Directory
 client_secret: ""
